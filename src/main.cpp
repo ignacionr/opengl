@@ -3,6 +3,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #define STB_IMAGE_WRITE_IMPLEMENTATION
+#define STB_IMAGE_IMPLEMENTATION
 #include "stb_image_write.h"
 
 #include <iostream>
@@ -13,13 +14,16 @@ const GLuint WIDTH = 800, HEIGHT = 600;
 
 #include "colored_cube.hpp"
 
-#include "shader_src.hpp"
 #include "glfw/init.hpp"
 #include "glfw/window.hpp"
 #include "glew/init.hpp"
 #include "shader.hpp"
 #include "gl/vertex_array.hpp"
 #include "gl/buffer.hpp"
+#include "gl/framebuffer.hpp"
+#include "gl/texture.hpp"
+
+#include "basic_pipeline.hpp"
 
 int main() {
     glfw::init glfwInit;
@@ -47,27 +51,19 @@ int main() {
     vao.unbind();
 
     // Set up framebuffer
-    GLuint fbo, texColorBuffer;
-    glGenFramebuffers(1, &fbo);
-    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+    gl::texture texColorBuffer;
+    gl::framebuffer fbo;
+    fbo.bind();
 
-    glGenTextures(1, &texColorBuffer);
-    glBindTexture(GL_TEXTURE_2D, texColorBuffer);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, WIDTH, HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texColorBuffer, 0);
+    texColorBuffer.bind();
+    texColorBuffer.gradient(WIDTH, HEIGHT);
 
-    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-        std::cerr << "Error: Framebuffer is not complete!" << std::endl;
-        return -1;
-    }
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+    fbo.unbind();
+    fbo.bind();
     glEnable(GL_DEPTH_TEST);
 
     {
-        shader_program shader;
+        basic_pipeline shader;
         shader.use();
         // Render loop
         for (int pass = 0; pass < 10; ++pass) {
@@ -76,12 +72,9 @@ int main() {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             // Draw the triangle
-            glm::mat4 model = glm::rotate(glm::mat4(1.0f), glm::radians(-55.0f + pass * 2.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-            glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -3.0f));
-            glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)WIDTH / (float)HEIGHT, 0.1f, 100.0f);
-            glUniformMatrix4fv(shader.getUniformLocation("model"), 1, GL_FALSE, &model[0][0]);
-            glUniformMatrix4fv(shader.getUniformLocation("view"), 1, GL_FALSE, &view[0][0]);
-            glUniformMatrix4fv(shader.getUniformLocation("projection"), 1, GL_FALSE, &projection[0][0]);
+            shader.model = glm::rotate(glm::mat4(1.0f), glm::radians(-55.0f + pass * 2.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+            shader.view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -3.0f));
+            shader.projection = glm::perspective(glm::radians(45.0f), (float)WIDTH / (float)HEIGHT, 0.1f, 100.0f);
 
             vao.bind();
             glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -95,8 +88,5 @@ int main() {
         }
     }
 
-    // Cleanup
-    glDeleteFramebuffers(1, &fbo);
-    glDeleteTextures(1, &texColorBuffer);
     return 0;
 }

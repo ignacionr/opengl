@@ -1,27 +1,42 @@
 #pragma once
 
-#include "shader_src.hpp"
+#include <GL/glew.h>
 
 struct shader_program {
+    struct shader {
+        shader(GLenum type, const GLchar* source) {
+            shader_ = glCreateShader(type);
+            glShaderSource(shader_, 1, &source, NULL);
+            glCompileShader(shader_);
+        }
+        ~shader() {
+            glDeleteShader(shader_);
+        }
+        GLuint shader_;
+    };
+
+    struct uniform_mat4_ref {
+        uniform_mat4_ref(GLint location = -1): location(location) {}
+        void operator=(const glm::mat4& value) {
+            glUniformMatrix4fv(location, 1, GL_FALSE, &value[0][0]);
+        }
+        GLint location;
+    };
+
     shader_program() {
         // Compile and setup the shader
-        GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-        glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-        glCompileShader(vertexShader);
-
-        GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-        glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-        glCompileShader(fragmentShader);
-
         shaderProgram = glCreateProgram();
-        glAttachShader(shaderProgram, vertexShader);
-        glAttachShader(shaderProgram, fragmentShader);
-        glLinkProgram(shaderProgram);
-
-        glDeleteShader(vertexShader);
-        glDeleteShader(fragmentShader);
     }
-    ~shader_program() {
+
+    void attach(const shader& shader) {
+        glAttachShader(shaderProgram, shader.shader_);
+    }
+
+    void link() {
+        glLinkProgram(shaderProgram);
+    }
+
+    virtual ~shader_program() {
         glDeleteProgram(shaderProgram);
     }
     void use() {
@@ -30,5 +45,6 @@ struct shader_program {
     GLint getUniformLocation(const GLchar* name) {
         return glGetUniformLocation(shaderProgram, name);
     }
+private:
     GLuint shaderProgram;
 };

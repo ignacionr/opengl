@@ -1,4 +1,5 @@
 #pragma once
+#include <GL/glew.h>
 
 namespace gl {
     struct buffer{
@@ -11,7 +12,7 @@ namespace gl {
         void bind() {
             glBindBuffer(GL_ARRAY_BUFFER, buffer_);
         }
-        void data_array(auto size, auto data, GLenum usage) {
+        void data_array(GLsizeiptr  size, const void * data, GLenum usage) {
             glBufferData(GL_ARRAY_BUFFER, size, data, usage);
         }
     private:
