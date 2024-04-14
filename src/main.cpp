@@ -18,8 +18,6 @@ const GLuint WIDTH = 800, HEIGHT = 600;
 #include "glfw/window.hpp"
 #include "glew/init.hpp"
 #include "shader.hpp"
-#include "gl/vertex_array.hpp"
-#include "gl/buffer.hpp"
 #include "gl/framebuffer.hpp"
 #include "gl/texture.hpp"
 
@@ -32,23 +30,7 @@ int main() {
 
     glew::init glewInit;
 
-    // Set up vertex data and buffers and configure vertex attributes
-    gl::buffer vbo;
-    gl::vertex_array vao;
-
-    vao.bind();
-    vbo.bind();
-    vbo.data_array(sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    // Position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-    // Color attribute
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    vao.unbind();
+    basic_pipeline shader(sizeof(vertices), vertices, {3, 6, 0}, {3, 6, 3});
 
     // Set up framebuffer
     gl::texture texColorBuffer;
@@ -58,12 +40,9 @@ int main() {
     texColorBuffer.bind();
     texColorBuffer.gradient(WIDTH, HEIGHT);
 
-    fbo.unbind();
-    fbo.bind();
     glEnable(GL_DEPTH_TEST);
 
     {
-        basic_pipeline shader;
         shader.use();
         // Render loop
         for (int pass = 0; pass < 10; ++pass) {
@@ -76,10 +55,7 @@ int main() {
             shader.view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -3.0f));
             shader.projection = glm::perspective(glm::radians(45.0f), (float)WIDTH / (float)HEIGHT, 0.1f, 100.0f);
 
-            vao.bind();
-            glDrawArrays(GL_TRIANGLES, 0, 36);
-            vao.unbind();
-
+            shader.draw();
             // Save the framebuffer to a file
             std::vector<unsigned char> buffer(WIDTH * HEIGHT * 3);
             glReadPixels(0, 0, WIDTH, HEIGHT, GL_RGB, GL_UNSIGNED_BYTE, buffer.data());

@@ -12,7 +12,10 @@ namespace gl {
         void bind() {
             glBindBuffer(GL_ARRAY_BUFFER, buffer_);
         }
-        void data_array(GLsizeiptr  size, const void * data, GLenum usage) {
+        void unbind() {
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
+        }
+        void data(GLsizeiptr  size, const void * data, GLenum usage) {
             glBufferData(GL_ARRAY_BUFFER, size, data, usage);
         }
     private:

@@ -24,7 +24,6 @@ struct shader_program {
     };
 
     shader_program() {
-        // Compile and setup the shader
         shaderProgram = glCreateProgram();
     }
 
