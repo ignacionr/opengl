@@ -22,3 +22,5 @@ RUN apt-get -y install libavcodec-dev libavformat-dev libavutil-dev libswscale-d
 RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-13 100 --slave /usr/bin/g++ g++ /usr/bin/g++-13
 
 RUN apt-get install -y libglew-dev libglfw3-dev libglm-dev
+
+RUN apt-get install -y ffmpeg

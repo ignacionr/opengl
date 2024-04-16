@@ -1,7 +1,7 @@
 #pragma once
 
 // Vertex data for a simple colored cube
-float vertices[] = {
+float vertices_src[] = {
     // positions        // colors
     -0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 0.0f,
      0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 0.0f,

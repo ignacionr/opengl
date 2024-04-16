@@ -27,7 +27,7 @@ static constexpr const GLchar* fragmentShaderSource = R"glsl(
     in vec3 ourColor;
     out vec4 color;
     void main() {
-        color = vec4(ourColor, 1.0f);
+        color = vec4(ourColor, 0.55f);
     }
 )glsl";
 
@@ -47,7 +47,7 @@ static constexpr const GLchar* fragmentShaderSource = R"glsl(
         // Set up vertex data and buffers and configure vertex attributes
         vao.bind();
         vbo.bind();
-        vbo.data(size, data, GL_STATIC_DRAW);
+        vbo.data(size * sizeof(float), data, GL_STATIC_DRAW);
 
         // Position attribute
         glVertexAttribPointer(0, position.size, GL_FLOAT, position.normalized, position.stride, position.pointer);
@@ -59,7 +59,8 @@ static constexpr const GLchar* fragmentShaderSource = R"glsl(
         vbo.unbind();
         vao.unbind();
 
-        count = size / sizeof(float) / (position.size + color.size);
+        count = size / (position.size + color.size);
+        std::cerr << "Loaded mesh with " << count << " vertices\n";
     }
 
     void draw() {
