@@ -19,6 +19,9 @@ struct shader_program {
         uniform_mat4_ref(GLint location = -1): location(location) {}
         void operator=(const glm::mat4& value) {
             glUniformMatrix4fv(location, 1, GL_FALSE, &value[0][0]);
+            if (glGetError() != GL_NO_ERROR) {
+                throw std::runtime_error("Failed to set uniform");
+            }
         }
         GLint location;
     };

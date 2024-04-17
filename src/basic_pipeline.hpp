@@ -1,12 +1,17 @@
 #pragma once
 
+#include <memory>
+#include <iostream>
+#include <vector>
+#include <format>
+
 #include <GL/glew.h>
 #include "gl/buffer.hpp"
 #include "gl/vertex_array.hpp"
 #include "gl/float_layout.hpp"
 #include "shader.hpp"
 
-struct basic_pipeline: shader_program {
+struct basic_pipeline {
 // Shader sources
 static constexpr const GLchar* vertexShaderSource = R"glsl(
     #version 330 core
@@ -32,17 +37,17 @@ static constexpr const GLchar* fragmentShaderSource = R"glsl(
 )glsl";
 
     basic_pipeline(GLsizeiptr  size, const void * data, gl::float_layout position, gl::float_layout color) {
+        program = std::make_unique<shader_program>();
         // Compile and setup the shader
-        shader vertex(GL_VERTEX_SHADER, vertexShaderSource);
-        shader fragment(GL_FRAGMENT_SHADER, fragmentShaderSource);
+        shader_program::shader vertex(GL_VERTEX_SHADER, vertexShaderSource);
+        shader_program::shader fragment(GL_FRAGMENT_SHADER, fragmentShaderSource);
 
-        attach(vertex);
-        attach(fragment);
-        link();
-
-        model.location = getUniformLocation("model");
-        view.location = getUniformLocation("view");
-        projection.location = getUniformLocation("projection");
+        program->attach(vertex);
+        program->attach(fragment);
+        program->link();
+        model.location = program->getUniformLocation("model");
+        view.location = program->getUniformLocation("view");
+        projection.location = program->getUniformLocation("projection");
 
         // Set up vertex data and buffers and configure vertex attributes
         vao.bind();
@@ -64,16 +69,22 @@ static constexpr const GLchar* fragmentShaderSource = R"glsl(
     }
 
     void draw() {
+        program->use();
         vao.bind();
         glDrawArrays(GL_TRIANGLES, 0, count);
         vao.unbind();
     }
 
-    uniform_mat4_ref model;
-    uniform_mat4_ref view;
-    uniform_mat4_ref projection;
+    void use() {
+        program->use();
+    }
+
+    shader_program::uniform_mat4_ref model;
+    shader_program::uniform_mat4_ref view;
+    shader_program::uniform_mat4_ref projection;
     GLsizei count;
 
     gl::buffer vbo;
     gl::vertex_array vao;
+    std::unique_ptr<shader_program> program;
 };

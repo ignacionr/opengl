@@ -88,10 +88,11 @@ int main()
 
     glew::init glewInit;
 
-    std::vector<float> vertices = load_obj("/workspaces/opengl/assets/teapot.obj");
-    // std::vector<float> vertices = load_obj("/workspaces/opengl/assets/hand.obj");
 
-    basic_pipeline shader(vertices.size(), vertices.data(), {3, 6, 0}, {3, 6, 3});
+    std::vector<float> vertices1 = load_obj("/workspaces/opengl/assets/teapot.obj");
+    basic_pipeline shader1(vertices1.size(), vertices1.data(), {3, 6, 0}, {3, 6, 3});
+    std::vector<float> vertices2 = load_obj("/workspaces/opengl/assets/hand.obj");
+    basic_pipeline shader2(vertices2.size(), vertices2.data(), {3, 6, 0}, {3, 6, 3});
 
     // Set up framebuffer
     gl::framebuffer fbo;
@@ -108,7 +109,6 @@ int main()
         constexpr float maxDepth = 200.0f; // Maximum distance from the object
         constexpr float minDepth = 1.0f;  // Minimum distance (almost touching the object)
         constexpr int totalFrames = 300;  // Total number of animation frames
-        shader.use();
         // Render loop
         for (int pass = 0; pass < 300; ++pass)
         {
@@ -123,7 +123,8 @@ int main()
             // shader.model = glm::rotate(glm::mat4(1.0f), glm::radians(-55.0f + pass * 2.0f), glm::vec3(1.0f, 0.0f, 0.0f));
             // shader.model = glm::scale(glm::rotate(glm::mat4(1.0f), glm::radians(-55.0f + pass * 2.0f), glm::vec3(1.0f, 0.0f, 0.0f)), glm::vec3(0.5f, 0.5f, 0.5f));
             // shader.model = glm::scale(glm::rotate(glm::mat4(1.0f), glm::radians(-55.0f + pass * 2.0f), glm::vec3(0.0f, 1.0f, 0.0f)), glm::vec3(0.5f, 0.5f, 0.5f));
-            shader.model = glm::scale(glm::rotate(glm::mat4(1.0f), glm::radians(-55.0f  * 2.0f), glm::vec3(0.0f, 1.0f, 0.0f)), glm::vec3(0.5f, 0.5f, 0.5f));
+            shader1.use();
+            shader1.model = glm::scale(glm::rotate(glm::mat4(1.0f), glm::radians(-55.0f  * 2.0f), glm::vec3(0.0f, 1.0f, 0.0f)), glm::vec3(0.5f, 0.5f, 0.5f));
 
             // Using cosine for non-linear movement
             // The cosine will oscillate between 1 and -1. Adjusting this range to go between maxDepth and minDepth
@@ -142,11 +143,17 @@ int main()
             glm::vec3 up(0.0f, 2.0f, 0.0f);
 
             // Create the view matrix using glm::lookAt
-            shader.view = glm::lookAt(cameraPos, center, up);
+            shader1.view = glm::lookAt(cameraPos, center, up);
 
-            shader.projection = glm::perspective(glm::radians(45.0f), (float)WIDTH / (float)HEIGHT, 0.1f, 100.0f);
+            shader1.projection = glm::perspective(glm::radians(45.0f), (float)WIDTH / (float)HEIGHT, 0.1f, 100.0f);
 
-            shader.draw();
+            shader1.draw();
+            shader2.use();
+            shader2.model = glm::scale(glm::rotate(glm::mat4(1.0f), glm::radians(-55.0f  * 2.0f), glm::vec3(0.0f, 1.0f, 0.0f)), glm::vec3(0.5f, 0.5f, 0.5f));
+            shader2.view = glm::lookAt(cameraPos, center, up);
+            shader2.projection = glm::perspective(glm::radians(45.0f), (float)WIDTH / (float)HEIGHT, 0.1f, 100.0f);
+            shader2.draw();
+
             // Save the framebuffer to a file
             std::vector<unsigned char> buffer(WIDTH * HEIGHT * 3);
             glReadPixels(0, 0, WIDTH, HEIGHT, GL_RGB, GL_UNSIGNED_BYTE, buffer.data());
